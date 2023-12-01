@@ -1,46 +1,50 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import MatchConnect from '../MatchConnect';
-import MatchPanel from '../MatchPanel';
-
+import React from "react";
+import { Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import MatchConnect from "../MatchConnect";
+import MatchPanel from "../MatchPanel";
 
 class Main extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            matchKey: undefined
-        }
-        this.loadDataFromLocalStorage()
-        this.onSetMatchKey = this.onSetMatchKey.bind(this)
+            matchKey: undefined,
+        };
+        this.loadDataFromLocalStorage();
+        this.onSetMatchKey = this.onSetMatchKey.bind(this);
     }
-    render () {
-        const {matchKey} = this.state;
+    render() {
+        const { matchKey } = this.state;
+        console.log(":s", matchKey);
         if (matchKey === undefined) {
-            return (
-                <MatchConnect onSetMatchKey={this.onSetMatchKey}/>
-            )
+            return <MatchConnect onSetMatchKey={this.onSetMatchKey} />;
         }
         return (
-            <MatchPanel matchKey={matchKey} onDisconnectMatch={() => {this.onSetMatchKey(undefined)}}/>
-        )
+            <MatchPanel
+                matchKey={matchKey}
+                onDisconnectMatch={() => {
+                    this.onSetMatchKey(undefined);
+                }}
+            />
+        );
     }
 
-    async onSetMatchKey (matchKey) {
+    async onSetMatchKey(matchKey) {
         if (matchKey === undefined) {
-            AsyncStorage.removeItem("@matchKey")
+            AsyncStorage.removeItem("@matchKey");
+        } else {
+            await AsyncStorage.setItem("@matchKey", matchKey);
         }
-        else {
-            await AsyncStorage.setItem("@matchKey", matchKey)
-        }
-        this.setState({matchKey})
+        this.setState({ matchKey });
     }
 
-    async loadDataFromLocalStorage () {
+    async loadDataFromLocalStorage() {
         try {
-            const matchKey = await AsyncStorage.getItem('@matchKey')
-            if(matchKey !== null) this.setState({matchKey})
-        } catch(e) {console.log(e)}
+            const matchKey = await AsyncStorage.getItem("@matchKey");
+            if (matchKey !== null) this.setState({ matchKey });
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
 

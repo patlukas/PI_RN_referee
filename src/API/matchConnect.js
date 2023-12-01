@@ -1,9 +1,18 @@
-export function apiOnMatchConnect(matchId, matchPassword) {
-    if (matchId == "1" && matchPassword == "1") {
-        return "123456789"
+import axios from "axios";
+
+export async function apiOnMatchConnect(matchId, matchPassword) {
+    console.log(":", matchId, matchPassword);
+    try {
+        const result = await axios.get(global.apiLink + "Games/" + matchId, {});
+        if (result.status == 200) {
+            if (result.data.keyCode === matchPassword) {
+                console.log(":1: T");
+                return matchId + ":" + matchPassword;
+            }
+        }
+    } catch (error) {
+        console.log(error);
     }
-    if (matchId == "2") {
-        return "111111111"
-    }
-    return false
+    console.log(":1: F");
+    return false;
 }

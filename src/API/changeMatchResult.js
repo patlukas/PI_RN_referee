@@ -1,25 +1,35 @@
-export function apiAddPoint(indexTeam, matchDetails) {
-    const setNow = matchDetails["setNow"]
-    let newMatchDetails = JSON.parse(JSON.stringify(matchDetails))
-    newMatchDetails["teams"][indexTeam]["points"][setNow] += 5 //TODO
-    const resultA = newMatchDetails["teams"][indexTeam]["points"][setNow]
-    const resultB = newMatchDetails["teams"][1 - indexTeam]["points"][setNow]
-    if (
-            (
-                (newMatchDetails["setNow"] == 4 && resultA >= 15) 
-                || 
-                (newMatchDetails["setNow"] != 4 && resultA >= 25) 
-            ) 
-            && 
-            resultA - resultB >= 2
-        ) {
-        newMatchDetails["teams"][indexTeam]["result"] += 1
-        if (newMatchDetails["teams"][indexTeam] ["result"] == 3) {
-            newMatchDetails["winner"] = indexTeam
-        }
-        else newMatchDetails["setNow"] += 1
-    }
-    return newMatchDetails
+import axios from "axios";
+import { apiGetMatchDetails } from "./getMatchDetails";
 
-    // TODO: del argument matchDetails, możliwy zwrot false od API jak nie można dodać puktu
+export async function apiAddPoint(indexTeam, matchKey) {
+    if (matchKey.split(":").length !== 2) return false;
+    const matchLogDateSplit = matchKey.split(":");
+    const gameId = matchLogDateSplit[0];
+    const keyCode = matchLogDateSplit[1];
+
+    try {
+        const result = await axios.get(global.apiLink + "Games/" + gameId, {});
+        if (result.status == 200) {
+            if (result.data.keyCode === keyCode) {
+                console.log(
+                    global.apiLink +
+                        "Games/" +
+                        gameId +
+                        "/Addpoint/" +
+                        indexTeam
+                );
+                const result2 = await axios.put(
+                    global.apiLink +
+                        "Games/" +
+                        gameId +
+                        "/Addpoint/" +
+                        indexTeam,
+                    {}
+                );
+            }
+        }
+    } catch (error) {
+        console.log(error);
+    }
+    return await apiGetMatchDetails(matchKey);
 }
