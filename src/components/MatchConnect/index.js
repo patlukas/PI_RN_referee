@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Text } from "react-native-paper";
 import { apiOnMatchConnect } from "../../API/matchConnect";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import { Camera } from "expo-camera";
+import DoubleBtn from "../Other/DoubleBtn";
+import Logo from "../Other/Logo";
+import Button from "../Other/Button";
 
-const MatchConnect = ({ onSetMatchKey }) => {
+const MatchConnect = ({ token, onSetMatchKey, onLogout }) => {
     const [errorMessage, setError] = useState("");
     const [matchId, setMatchId] = useState("");
     const [matchPassword, setMatchPassword] = useState("");
-    const [hasPermission, setHasPermission] = useState(null);
     const [scan, setScan] = useState(false);
     useEffect(() => {
         (async () => {
-            const { status } = await BarCodeScanner.requestPermissionsAsync();
-            setHasPermission(status === "granted");
+            await BarCodeScanner.requestPermissionsAsync();
         })();
     }, []);
 
-    const handleBarCodeScanned = async ({ type, data }) => {
+    const handleBarCodeScanned = async ({ data }) => {
         login_data = data.split(":");
         if (login_data.length != 2) {
-            setError("Błędny kod QR");
+            setError("Incorrect QR code!");
             return;
         } else {
             const matchKey = await apiOnMatchConnect(
+                token,
                 login_data[0],
                 login_data[1]
             );
-            console.log("M", matchKey);
             if (matchKey === false) {
-                setError("Błędny kod QR");
+                setError("Incorrect QR code!");
             } else {
                 onSetMatchKey(matchKey);
             }
@@ -38,73 +38,87 @@ const MatchConnect = ({ onSetMatchKey }) => {
         setScan(false);
     };
 
-    // const renderCamera = () => {
-    //     return (
-    //       <View style={styles.cameraContainer}>
-    //         <BarCodeScanner
-    //           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-    //           style={styles.camera}
-    //         />
-    //       </View>
-    //     );
-    //   };
-
     const onMatchConnect = async () => {
-        const matchKey = await apiOnMatchConnect(matchId, matchPassword);
-        console.log("M", matchKey);
+        const matchKey = await apiOnMatchConnect(token, matchId, matchPassword);
         if (matchKey === false) {
             setMatchPassword("");
-            setError("Błędne dane");
+            setError("Incorrect data!");
         } else {
             onSetMatchKey(matchKey);
         }
     };
     if (scan) {
         return (
-            <View style={{ height: "100%", width: "100%" }}>
+            <View style={styles.container_main}>
                 <BarCodeScanner
                     onBarCodeScanned={handleBarCodeScanned}
-                    style={{ height: "90%", width: "100%" }}
+                    style={styles.container_qr}
                 />
-                <Button mode="contained" onPress={() => setScan(false)}>
-                    Zakończ skan
-                </Button>
+                <View style={styles.container_smaller}>
+                    <Button
+                        title="Finish scan"
+                        onPress={() => setScan(false)}
+                    />
+                </View>
             </View>
         );
     }
 
     return (
-        <View>
-            <Text variant="titleMedium">{errorMessage}</Text>
-            <TextInput
-                label="Id meczu"
-                value={matchId}
-                onChangeText={(text) => setMatchId(text)}
-            />
-            <TextInput
-                label="Hasło meczu"
-                value={matchPassword}
-                secureTextEntry={true}
-                onChangeText={(text) => setMatchPassword(text)}
-            />
-            <Button mode="contained" onPress={onMatchConnect}>
-                Połącz
-            </Button>
-            <Button mode="contained" onPress={() => setScan(true)}>
-                Połącz za pomocą kodu QR
-            </Button>
+        <View style={styles.container_main}>
+            <Logo />
+            <View style={styles.container_smaller}>
+                <TextInput
+                    style={styles.input_txt}
+                    label="Match ID"
+                    value={matchId}
+                    onChangeText={(text) => setMatchId(text)}
+                />
+                <TextInput
+                    style={styles.input_txt}
+                    label="Key"
+                    value={matchPassword}
+                    secureTextEntry={true}
+                    onChangeText={(text) => setMatchPassword(text)}
+                />
+                <Text style={styles.txt_error}>{errorMessage}</Text>
+                <DoubleBtn
+                    title1="Connect"
+                    title2="Connect using QR code"
+                    onPress1={onMatchConnect}
+                    onPress2={() => setScan(true)}
+                />
+                <View style={styles.separator} />
+                <Button title="Log Out" onPress={onLogout} />
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    optionText: (color) => ({
-        color,
-        paddingLeft: 5,
-    }),
-    checkbox: {
-        paddingVertical: 6,
-        paddingLeft: 6,
+    container_main: {
+        width: "100%",
+        height: "100%",
+    },
+    container_smaller: {
+        width: "80%",
+        marginHorizontal: "10%",
+    },
+    container_qr: {
+        height: "90%",
+        width: "100%",
+    },
+    input_txt: {
+        marginVertical: 10,
+        backgroundColor: "#ddd",
+    },
+    txt_error: {
+        color: "#f55",
+        fontSize: 16,
+        fontWeight: 600,
+    },
+    separator: {
+        height: 60,
     },
 });
 

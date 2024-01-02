@@ -1,35 +1,26 @@
 import axios from "axios";
 import { apiGetMatchDetails } from "./getMatchDetails";
 
-export async function apiAddPoint(indexTeam, matchKey) {
+export async function apiAddPoint(token, indexTeam, matchKey) {
+    console.log(token, indexTeam, matchKey);
     if (matchKey.split(":").length !== 2) return false;
     const matchLogDateSplit = matchKey.split(":");
     const gameId = matchLogDateSplit[0];
-    const keyCode = matchLogDateSplit[1];
+    const keyCode = matchLogDateSplit[1]; //TODO
 
     try {
-        const result = await axios.get(global.apiLink + "Games/" + gameId, {});
-        if (result.status == 200) {
-            if (result.data.keyCode === keyCode) {
-                console.log(
-                    global.apiLink +
-                        "Games/" +
-                        gameId +
-                        "/Addpoint/" +
-                        indexTeam
-                );
-                const result2 = await axios.put(
-                    global.apiLink +
-                        "Games/" +
-                        gameId +
-                        "/Addpoint/" +
-                        indexTeam,
-                    {}
-                );
+        console.log(
+            global.apiLink + "Games/" + gameId + "/Addpoint/" + indexTeam
+        );
+        await axios.put(
+            global.apiLink + "Games/" + gameId + "/Addpoint/" + indexTeam,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
             }
-        }
+        );
     } catch (error) {
-        console.log(error);
+        console.log("2.", error);
     }
-    return await apiGetMatchDetails(matchKey);
+    return await apiGetMatchDetails(token, matchKey);
 }
