@@ -86,8 +86,8 @@ const MatchPanel = ({ token, matchKey, onDisconnectMatch }) => {
                         nameG={matchDetails["teams"][1]["name"]}
                         resultH={matchDetails["teams"][0]["result"]}
                         resultG={matchDetails["teams"][1]["result"]}
-                        imageG={matchDetails["teams"][0]["imageUrl"]}
-                        imageH={matchDetails["teams"][1]["imageUrl"]}
+                        imageH={matchDetails["teams"][0]["imageUrl"]}
+                        imageG={matchDetails["teams"][1]["imageUrl"]}
                     />
 
                     {el_sets}
